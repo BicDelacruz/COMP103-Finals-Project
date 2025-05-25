@@ -1,7 +1,7 @@
 🍦 Scooply POS System
 
 
-Scooply is a final project in Java — a point-of-sale (POS) system for an ice cream shop, designed to manage and process customer orders through a smooth, visually engaging interface built with Java Swing. It allows users to browse various ice cream flavors, adjust quantities, view individual prices in ₱ pesos, and confirm or reset orders. The system also includes receipt generation, total earnings display, and transaction history tracking to help staff efficiently monitor sales activity, all styled with custom images and organized layouts for a clean, easy-to-use experience.
+Scooply is our final project in Java — a point-of-sale (POS) system for an ice cream shop, designed to manage and process customer orders through a smooth, visually engaging interface built with Java Swing. It allows users to browse various ice cream flavors, adjust quantities, view individual prices in ₱ pesos, and confirm or reset orders. The system also includes receipt generation, total earnings display, and transaction history tracking to help staff efficiently monitor sales activity, all styled with custom images and organized layouts for a clean, easy-to-use experience.
 
 
 📌 Key Features
