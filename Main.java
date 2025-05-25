@@ -18,8 +18,5 @@ class Main {
         }
         //Run the MainMenu GUI on the Event Dispatch Thread
         SwingUtilities.invokeLater(MainMenu::new);
-
-        //new Transactions();
-        //new Earnings();
     }
 }

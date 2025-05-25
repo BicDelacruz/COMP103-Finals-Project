@@ -128,12 +128,28 @@ public class MainMenu {
         menuPanel.add(titleContainer);
         //menuPanel.add(Box.createVerticalStrut(15));
 
-        String[] menuOptions = {"Main Menu", "Transact History", "Total Earnings"}; // Adjusted text for "Transact History"
+        //This is the buttons
+        String[] menuOptions = {"Main Menu", "Transact History", "Total Earnings"};
         for (String option : menuOptions) {
             JButton button = new JButton(option);
             button.setFont(new Font("Consolas", Font.PLAIN, 18));
             button.setMaximumSize(new Dimension(200, 40));
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            // Add action listeners for these buttons (These is the logic of window transitions using button)
+            button.addActionListener(_ -> {
+                if (option.equals("Main Menu")) {
+                    frame.dispose(); // Close the window
+                    Main.main(new String[]{}); //run the code in main method of Main class from another class
+                } else if (option.equals("Total Earnings")) {
+                    frame.dispose();
+                    SwingUtilities.invokeLater(Earnings::new);
+                } else if (option.equals("Transact History")) {
+                    frame.dispose();
+                    SwingUtilities.invokeLater(Transactions::new);
+                }
+            });
+
             // Add action listeners for these buttons if functionality is implemented
             menuPanel.add(Box.createVerticalStrut(20));
             menuPanel.add(button);
