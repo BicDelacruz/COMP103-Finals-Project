@@ -4,6 +4,7 @@ import java.awt.*;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -114,6 +115,7 @@ class Transactions {
         transactionsPanel.setLayout(new GridLayout(0,1,10,10));
 
         JPanel orderedItemsPanel = new JPanel();
+        orderedItemsPanel.setLayout(new GridLayout(0, 1, 10, 10));
         orderedItemsPanel.setPreferredSize(new Dimension(700, 0));
         orderedItemsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         centerContainerPanel.add(orderedItemsPanel, BorderLayout.EAST);
@@ -122,7 +124,6 @@ class Transactions {
             Connection conn = DriverManager.getConnection(JDBC_URL);
             Statement statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM transactions_tbl");
-            
 
             while (resultSet.next()) {
                 JPanel transactionCardPanel = new JPanel();
@@ -173,10 +174,56 @@ class Transactions {
                 transactionCardPanel.add(viewOrderedItemsBtn);
                 
                 viewOrderedItemsBtn.addActionListener(e -> {
-                    System.out.println(timeLabel.getText());
+                try {
+                        String time = timeLabel.getText().substring(14);
+                        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM transaction_items_tbl WHERE time = ?");
+                        preparedStatement.setString(1, time);
+                        ResultSet res = preparedStatement.executeQuery(); 
+
+                        JPanel orderedItemsPanel2 = new JPanel();
+                        orderedItemsPanel2.setLayout(new GridLayout(0, 1, 10, 10));
+                        orderedItemsPanel2.setPreferredSize(new Dimension(700, 0));
+                        orderedItemsPanel2.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                        centerContainerPanel.add(orderedItemsPanel2, BorderLayout.EAST);
+                        centerContainerPanel.remove(orderedItemsPanel);
+
+                        boolean firstRow = true;
+
+                        while (res.next()) {
+                            
+
+                            if (firstRow) {
+                                JLabel dateOrderedLabel = new JLabel(res.getString("date") + "  |  " + res.getString("time"));
+                                dateOrderedLabel.setFont(new Font("Consolas", Font.BOLD, 25));
+                                dateOrderedLabel.setHorizontalAlignment(JLabel.CENTER);
+                                dateOrderedLabel.setBackground(new Color(71, 60, 56));
+                                dateOrderedLabel.setForeground(Color.WHITE);
+                                dateOrderedLabel.setOpaque(true);
+                                orderedItemsPanel2.add(dateOrderedLabel);
+
+                                firstRow = false;
+                            }
+                            
+                            JLabel itemOrderedJLabel = new JLabel(res.getString("item_name") + "  |   x" + res.getInt("item_quantity")
+                            + "   |   "  +  res.getInt("item_subtotal"));
+                            itemOrderedJLabel.setFont(new Font("Consolas", Font.PLAIN, 25));
+                            itemOrderedJLabel.setHorizontalAlignment(JLabel.CENTER);
+                            itemOrderedJLabel.setBackground(new Color(194, 177, 156));
+                            itemOrderedJLabel.setOpaque(true);
+                            orderedItemsPanel2.add(itemOrderedJLabel);
+                            
+                            
+                            orderedItemsPanel2.revalidate();
+                            orderedItemsPanel2.repaint();
+                        }
+                    } catch (SQLException x) {
+                        x.printStackTrace();
+                    }
                 });
+
             }
             
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
