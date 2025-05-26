@@ -5,6 +5,7 @@ Scooply is our final project in Java — a point-of-sale (POS) system for an ice
 
 
 📌 Key Features
+
 🍦 Ice cream flavor selection with images for each menu item
 
 💸 Individual price display (in pesos) per ice cream
@@ -24,3 +25,5 @@ Scooply is our final project in Java — a point-of-sale (POS) system for an ice
 🎨 Custom GUI layout and theme using images, fonts, and colors to match Scooply’s branding
 
 ✔️ Runs safely on the Event Dispatch Thread (EDT) using SwingUtilities.invokeLater()
+
+📚 Uses SQLite and SQLite JDBC (library for accessing and creating SQLite database files in Java.) https://github.com/xerial/sqlite-jdbc.git
