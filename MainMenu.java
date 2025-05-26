@@ -1,3 +1,4 @@
+import javax.print.DocFlavor.STRING;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -79,6 +80,7 @@ public class MainMenu {
     private final int RECEIPT_TOTAL_COL_WIDTH = 10;
     private final int RECEIPT_TOTAL_WIDTH = RECEIPT_ITEM_COL_WIDTH + RECEIPT_QTY_COL_WIDTH + RECEIPT_TOTAL_COL_WIDTH + 4;
 
+    ArrayList<ArrayList<String>> orderedItemsArrayList = new ArrayList<>();
 
     public MainMenu() {
         if (itemPricesPhp.length != itemNames.length || itemNames.length != imagePaths.length) {
@@ -272,6 +274,21 @@ public class MainMenu {
                     itemQuantities[index]--;
                     quantityFields[index].setText(String.format("%02d", itemQuantities[index])); // Update text field
                     updateItemDisplay(index);
+
+                    String itemName = itemNames[index];
+                    String itemQty = String.valueOf(itemQuantities[index]);
+                    String total = itemTotalLabelsPhp[index].getText().substring(8);
+
+                for (int x = orderedItemsArrayList.size() - 1; x >= 0; x--) {
+                    if (orderedItemsArrayList.get(x).get(0).equals(itemName)) {
+                        orderedItemsArrayList.get(x).set(1, itemQty);
+                        orderedItemsArrayList.get(x).set(2, total);
+                    }
+                    if (orderedItemsArrayList.get(x).get(1).equals("0")) {
+                        orderedItemsArrayList.remove(x);
+                    }
+                }
+
                     updateReceiptArea(); // Update receipt immediately
                 }
             });
@@ -281,6 +298,32 @@ public class MainMenu {
                     itemQuantities[index]++;
                     quantityFields[index].setText(String.format("%02d", itemQuantities[index])); // Update text field
                     updateItemDisplay(index);
+
+                    String itemName = itemNames[index];
+                    String itemQty = String.valueOf(itemQuantities[index]);
+                    String total = itemTotalLabelsPhp[index].getText().substring(8);
+
+                    ArrayList<String> order = new ArrayList<>();
+                    boolean itemInList = false;
+
+                    for (int x = 0; x < orderedItemsArrayList.size(); x++) {
+                        if (orderedItemsArrayList.get(x).get(0) == itemName) itemInList = true;
+                    }
+
+                    if (itemInList) {
+                        for (int x = 0; x < orderedItemsArrayList.size(); x++) {
+                            if (orderedItemsArrayList.get(x).get(0) == itemName) {
+                                orderedItemsArrayList.get(x).set(1, itemQty);
+                                orderedItemsArrayList.get(x).set(2, total);
+                            }
+                        }
+                    } else {
+                        order.add(itemName);
+                        order.add(itemQty);
+                        order.add(total);
+                        orderedItemsArrayList.add(order);
+                    }
+
                     updateReceiptArea(); // Update receipt immediately
                 }
             });
@@ -484,7 +527,8 @@ public class MainMenu {
 
         boolean itemsSelected = false;
         boolean hasInvalidQuantity = false;
-        List<String> wrappedLines = wrapText("", RECEIPT_ITEM_COL_WIDTH);
+
+        String itemNameWithPrice = "";
         int qty = 0;
         double itemTotal = 0;
 
@@ -499,8 +543,8 @@ public class MainMenu {
                 double itemPrice = itemPricesPhp[i];
                 itemTotal = qty * itemPrice;
 
-                String itemNameWithPrice = itemNames[i] + " (" + CURRENCY_SYMBOL + df.format(itemPrice) + ")";
-                wrappedLines = wrapText(itemNameWithPrice, RECEIPT_ITEM_COL_WIDTH);
+                itemNameWithPrice = itemNames[i] + " (" + CURRENCY_SYMBOL + df.format(itemPrice) + ")";
+                List<String> wrappedLines = wrapText(itemNameWithPrice, RECEIPT_ITEM_COL_WIDTH);
 
                 // First line with quantity and total
                 receiptPreview.append(String.format("%-" + RECEIPT_ITEM_COL_WIDTH + "s %" + RECEIPT_QTY_COL_WIDTH + "d %" + RECEIPT_TOTAL_COL_WIDTH + "s\n",
@@ -515,7 +559,7 @@ public class MainMenu {
                 subTotalPhp += itemTotal;
             }
         }
-
+    
         if (!itemsSelected && !hasInvalidQuantity) { // Only show "No items selected" if truly empty and no input errors
             receiptPreview.append("\n          No items selected yet.\n");
         } else if (hasInvalidQuantity) {
@@ -565,7 +609,6 @@ public class MainMenu {
         changePhp = cashReceived - totalDuePhp;
         changeLabelPhp.setText(df.format(changePhp));
     }
-
 
     private void confirmOrderAndPrintReceipt() {
         // First, check for any invalid quantities in the item fields
@@ -683,11 +726,16 @@ public class MainMenu {
         //changePhp
 
         insertTransaction(order_time, order_date, totalDuePhp, cashReceived, changePhp);
+
+        for (int i = 0; i < orderedItemsArrayList.size(); i++) {
+            insertTransactionItems(order_date, order_time, orderedItemsArrayList.get(i).get(0), orderedItemsArrayList.get(i).get(1), orderedItemsArrayList.get(i).get(2));
+        }
+
         // Removed the prompt for a new order. The application will now stay on the final receipt.
     }
 
-
     private void resetOrder() {
+        orderedItemsArrayList.clear();
         for (int i = 0; i < itemNames.length; i++) {
             itemQuantities[i] = 0;
             quantityFields[i].setText(String.format("%02d", itemQuantities[i])); // Reset text field
@@ -787,4 +835,26 @@ public class MainMenu {
             e.printStackTrace();
         }
     }
+
+    private void insertTransactionItems(String date, String time, String item_name, String quantity, String item_total) {
+        try {
+            Connection conn = DriverManager.getConnection(JDBC_URL);
+            String sqlQuery = "INSERT INTO transaction_items_tbl (date, time, item_name, item_quantity, item_subtotal) VALUES (?, ?, ?, ?, ?)";
+
+            PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
+
+            preparedStatement.setString(1, date);
+            preparedStatement.setString(2, time);
+            preparedStatement.setString(3, item_name);
+            preparedStatement.setDouble(4, Double.parseDouble(quantity));
+            preparedStatement.setDouble(5, Double.parseDouble(item_total));
+
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
 }
+
