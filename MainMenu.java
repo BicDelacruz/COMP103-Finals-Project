@@ -1,4 +1,3 @@
-import javax.print.DocFlavor.STRING;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
