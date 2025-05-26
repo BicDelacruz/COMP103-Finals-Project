@@ -4,6 +4,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import java.text.DecimalFormat;
 //import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,6 +18,8 @@ import java.util.Date;
 import java.util.List;
 
 public class MainMenu {
+
+    final String JDBC_URL = "jdbc:sqlite:scooply_db.db";
 
     private JFrame frame;
     private JPanel menuPanel, itemsPanel, receiptPanel;
@@ -83,6 +91,7 @@ public class MainMenu {
     }
 
     private void initialize() {
+
         frame = new JFrame("Scooply POS");
         //Set the Frame Icon
         ImageIcon logoIcon = new ImageIcon(LOGO_ICON_PATH);
@@ -475,6 +484,9 @@ public class MainMenu {
 
         boolean itemsSelected = false;
         boolean hasInvalidQuantity = false;
+        List<String> wrappedLines = wrapText("", RECEIPT_ITEM_COL_WIDTH);
+        int qty = 0;
+        double itemTotal = 0;
 
         for (int i = 0; i < itemNames.length; i++) {
             if (itemQuantities[i] == -1) { // Check for the invalid quantity marker
@@ -483,17 +495,18 @@ public class MainMenu {
             }
             if (itemQuantities[i] > 0) {
                 itemsSelected = true;
-                int qty = itemQuantities[i];
+                qty = itemQuantities[i];
                 double itemPrice = itemPricesPhp[i];
-                double itemTotal = qty * itemPrice;
+                itemTotal = qty * itemPrice;
 
                 String itemNameWithPrice = itemNames[i] + " (" + CURRENCY_SYMBOL + df.format(itemPrice) + ")";
-                List<String> wrappedLines = wrapText(itemNameWithPrice, RECEIPT_ITEM_COL_WIDTH);
+                wrappedLines = wrapText(itemNameWithPrice, RECEIPT_ITEM_COL_WIDTH);
 
                 // First line with quantity and total
                 receiptPreview.append(String.format("%-" + RECEIPT_ITEM_COL_WIDTH + "s %" + RECEIPT_QTY_COL_WIDTH + "d %" + RECEIPT_TOTAL_COL_WIDTH + "s\n",
                                                      wrappedLines.get(0), qty, df.format(itemTotal)));
 
+                
                 // Subsequent lines (if any) for wrapping, indented
                 for (int j = 1; j < wrappedLines.size(); j++) {
                     receiptPreview.append(String.format("%-" + RECEIPT_ITEM_COL_WIDTH + "s %" + RECEIPT_QTY_COL_WIDTH + "s %" + RECEIPT_TOTAL_COL_WIDTH + "s\n",
@@ -661,6 +674,15 @@ public class MainMenu {
 
         JOptionPane.showMessageDialog(frame, "Order Confirmed! Receipt Printed (displayed in receipt area).", "Order Finalized", JOptionPane.INFORMATION_MESSAGE);
 
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        String order_time = timeFormat.format(new Date());
+        String order_date = dateFormat.format(new Date());
+        //totalDuePhp
+        //cashReceived
+        //changePhp
+
+        insertTransaction(order_time, order_date, totalDuePhp, cashReceived, changePhp);
         // Removed the prompt for a new order. The application will now stay on the final receipt.
     }
 
@@ -744,5 +766,25 @@ public class MainMenu {
             sb.append(character);
         }
         return sb.toString();
+    }
+
+    private void insertTransaction(String order_time, String order_date, double order_total, double cash_given, double change_given ) {
+        try {
+            Connection conn = DriverManager.getConnection(JDBC_URL);
+            String sqlQuery = "INSERT INTO transactions_tbl (time, date, order_total, cash_given, change_given) VALUES (?, ?, ?, ?, ?)";
+            
+            PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
+            
+            preparedStatement.setString(1, order_time);
+            preparedStatement.setString(2, order_date);
+            preparedStatement.setDouble(3, order_total);
+            preparedStatement.setDouble(4, cash_given);
+            preparedStatement.setDouble(5, change_given);
+
+            preparedStatement.executeUpdate();
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
