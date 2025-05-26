@@ -11,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import java.text.DecimalFormat;
-//import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,13 +26,15 @@ public class MainMenu {
     private JLabel subTotalLabelPhp, totalDueLabelPhp, changeLabelPhp;
     private JTextField cashFieldPhp; // For cash input
     private double totalDuePhp = 0.0, subTotalPhp = 0.0, changePhp = 0.0;
+    /*----------------------------------------------------------------------*/
 
-    //Direct Peso Prices & Configuration
+    
+    /*-------------- ITEM PRICING AND FORMATTING CONFIGURATION --------------*/
     private final double[] itemPricesPhp = {
             50.00, // Vanilla Ice Cream
             65.00, // Chocolate Ice Cream
             60.00, // Strawberry Ice Cream
-            55.00, // Banana Ice Cream
+            55.00, // Banana Ice Creams
             60.00, // Coconut Ice Cream
             70.00, // Kiwi Ice Cream
             65.00, // Mango Ice Cream
@@ -42,8 +43,11 @@ public class MainMenu {
     };
     private final String CURRENCY_SYMBOL = "₱";
     private final DecimalFormat df = new DecimalFormat("0.00");
+    /*----------------------------------------------------------------------*/
 
-    private JTextField[] quantityFields; // Changed to JTextField for direct input
+
+    /* ---------------------------------- ITEM DETAILS STORAGE -------------------------------------*/
+    private JTextField[] quantityFields;
     private JLabel[] nameAndPriceLabels;
     private JLabel[] itemTotalLabelsPhp;
     private int[] itemQuantities;
@@ -54,7 +58,7 @@ public class MainMenu {
             "Special Mixed Ice Cream"
     };
 
-    //Unloading all the images here
+    //Unloading all the images here (File access)
     String[] imagePaths = {
             "images/menu_pics/Vanilla_ice_cream.png",
             "images/menu_pics/Chocolate_ice_cream.png",
@@ -67,13 +71,15 @@ public class MainMenu {
             "images/menu_pics/Special_mixed_icecream.png"
     };
 
-    // Icon paths
+    // Icon configuration/paths
     private final String MINUS_ICON_PATH = "images/icons/minus_icon.png";
     private final String PLUS_ICON_PATH = "images/icons/plus_icon.png";
     private final int ICON_SIZE = 20; // Desired icon size
     private final String LOGO_ICON_PATH = "images/logo/ice_cream_logo.png";
+    /*-------------------------------------------------------------------------------------------------*/
 
-    // Receipt column widths
+
+    /*--------------------------------------------- RECEIPT FORMATTING CONSTANTS ------------------------------------------*/
     private final int RECEIPT_ITEM_COL_WIDTH = 25; // Wider for wrapping
     private final int RECEIPT_QTY_COL_WIDTH = 5;
     private final int RECEIPT_TOTAL_COL_WIDTH = 10;
@@ -85,17 +91,18 @@ public class MainMenu {
         if (itemPricesPhp.length != itemNames.length || itemNames.length != imagePaths.length) {
             JOptionPane.showMessageDialog(null,
                     "Configuration error: Mismatch between number of items, prices, and images.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                    "Error", JOptionPane.ERROR_MESSAGE); // (Error Handling)
             System.exit(1);
         }
         initialize();
     }
 
+    // Main Window (Frame) Setup
     private void initialize() {
 
+
         frame = new JFrame("Scooply POS");
-        //Set the Frame Icon
-        ImageIcon logoIcon = new ImageIcon(LOGO_ICON_PATH);
+        ImageIcon logoIcon = new ImageIcon(LOGO_ICON_PATH); //Set the Frame Icon
         frame.setIconImage(logoIcon.getImage());
         //frame.setSize(1920, 1080);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -103,14 +110,14 @@ public class MainMenu {
         frame.setLayout(new BorderLayout(10, 10));
         ((JPanel) frame.getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // LEFT MENU PANEL
+        // Left Navigation Panel Creation
         menuPanel = new JPanel();
         menuPanel.setBackground(new Color(194, 177, 156));
         menuPanel.setPreferredSize(new Dimension(250, 0));
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
+        // Application Title and Tagline Area
         JPanel titleContainer = new JPanel();
-        // SET LAYOUT TO NULL FOR MANUAL POSITIONING
         titleContainer.setLayout(null);
         titleContainer.setBackground(new Color(71, 60, 56)); // Dark brown background
         titleContainer.setOpaque(true);
@@ -129,16 +136,13 @@ public class MainMenu {
         taglineLabel.setFont(new Font("Comic Sans MS", Font.PLAIN, 14));
         taglineLabel.setForeground(Color.WHITE);
         Dimension taglinePreferredSize = taglineLabel.getPreferredSize();
-        // x=20 (align with title), y = titleLabel's y + titleLabel's height + some_spacing
-        // Example: y = 10 (titleY) + titlePreferredSize.height + 5 (spacing)
         taglineLabel.setBounds(20, 35 + titlePreferredSize.height + 5, taglinePreferredSize.width, taglinePreferredSize.height);
 
         titleContainer.add(titleLabel);
         titleContainer.add(taglineLabel);
         menuPanel.add(titleContainer);
-        //menuPanel.add(Box.createVerticalStrut(15));
 
-        //This is the buttons
+        // Navigation Buttons Setup
         String[] menuOptions = {"Main Menu", "Transact History", "Total Earnings"};
         for (String option : menuOptions) {
             JButton button = new JButton(option);
@@ -159,8 +163,6 @@ public class MainMenu {
                     SwingUtilities.invokeLater(Transactions::new);
                 }
             });
-
-            // Add action listeners for these buttons if functionality is implemented
             menuPanel.add(Box.createVerticalStrut(20));
             menuPanel.add(button);
         }
@@ -177,18 +179,16 @@ public class MainMenu {
         menuTitleLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
         menuTitleLabel.setForeground(new Color(71, 60, 56));
         menuTitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        menuTitleLabel.setBorder(new EmptyBorder(0, 0, 15, 0)); // Padding below MENU
+        menuTitleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
         centerContainerPanel.add(menuTitleLabel, BorderLayout.NORTH);
 
 
-        // ITEMS MENU PANEL (CENTER)
+        // Ice Cream Items Display Panel Initialization
         itemsPanel = new JPanel(new GridLayout(0, 3, 15, 15));
         itemsPanel.setBackground(new Color(245, 241, 235));
-        // Removed direct border, now handled by centerContainerPanel's padding
-        // itemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10)); // No longer needed here
 
         itemQuantities = new int[itemNames.length];
-        quantityFields = new JTextField[itemNames.length]; // Initialized as JTextField
+        quantityFields = new JTextField[itemNames.length];
         nameAndPriceLabels = new JLabel[itemNames.length];
         itemTotalLabelsPhp = new JLabel[itemNames.length];
 
@@ -199,17 +199,17 @@ public class MainMenu {
         ImageIcon plusIcon = null;
 
         if (minusIconRaw.getImage().getWidth(null) == -1) {
-            System.err.println("Warning: Minus icon not found at " + MINUS_ICON_PATH);
+            System.err.println("Warning: Minus icon not found at " + MINUS_ICON_PATH); // (Error Handling)
         } else {
             minusIcon = new ImageIcon(minusIconRaw.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH));
         }
         if (plusIconRaw.getImage().getWidth(null) == -1) {
-            System.err.println("Warning: Plus icon not found at " + PLUS_ICON_PATH);
+            System.err.println("Warning: Plus icon not found at " + PLUS_ICON_PATH); // (Error Handling)
         } else {
             plusIcon = new ImageIcon(plusIconRaw.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH));
         }
 
-
+        /*--------------------------------------- Individual Ice Cream Item Card Creation Loop ---------------------------------------*/
         for (int i = 0; i < itemNames.length; i++) {
             final int index = i;
             itemQuantities[i] = 0;
@@ -356,12 +356,12 @@ public class MainMenu {
                                 itemQuantities[idx] = newQty;
                                 quantityFields[idx].setBackground(Color.WHITE); // Valid input, reset color
                             } else {
-                                // Quantity out of range
+                                // Quantity out of range (Error Handling)
                                 quantityFields[idx].setBackground(new Color(255, 200, 200)); // Light red for error
                                 itemQuantities[idx] = -1; // Indicate invalid state for quantity
                             }
                         } catch (NumberFormatException ex) {
-                            // Non-numeric input
+                            // Non-numeric input (Error Handling)
                             quantityFields[idx].setBackground(new Color(255, 200, 200)); // Light red for error
                             itemQuantities[idx] = -1; // Indicate invalid state for quantity
                         }
@@ -382,14 +382,16 @@ public class MainMenu {
             itemCard.add(Box.createVerticalGlue());
 
             itemsPanel.add(itemCard);
-        }
+        }/*----------------------------------------------------------------------------------------------------------------*/
+
+        // Scroll Item Pane
         JScrollPane itemsScrollPane = new JScrollPane(itemsPanel);
         itemsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         itemsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         centerContainerPanel.add(itemsScrollPane, BorderLayout.CENTER); // Add scroll pane to center container
         frame.add(centerContainerPanel, BorderLayout.CENTER); // Add center container to frame
 
-        // RECEIPT PANEL (RIGHT)
+        // Receipt Panel and Clock Setup (Right Side)
         receiptPanel = new JPanel();
         receiptPanel.setBackground(new Color(230, 230, 230));
         receiptPanel.setPreferredSize(new Dimension(380, 0));
@@ -402,11 +404,14 @@ public class MainMenu {
         receiptPanel.add(clockLabel, BorderLayout.NORTH);
         updateClock(clockLabel);
 
+        // Receipt Display Area
         receiptArea = new JTextArea();
         receiptArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         receiptArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(receiptArea);
         receiptPanel.add(scrollPane, BorderLayout.CENTER);
+
+        /*--------------------------- Order Summary and Payment Section -------------------------------*/
 
         // Summary Panel (SubTotal, Cash, Change, Total Due)
         JPanel summaryPanel = new JPanel(new GridLayout(4, 2, 5, 5)); // 4 rows now
@@ -474,6 +479,9 @@ public class MainMenu {
 
         receiptPanel.add(summaryPanel, BorderLayout.SOUTH);
         frame.add(receiptPanel, BorderLayout.EAST);
+        /*---------------------------------------------------------------------------------------------------*/
+
+        /*--------------------------- Main Action Buttons (Confirm/Reset) -------------------------------*/
 
         // CONTROL BUTTONS (BOTTOM)
         JPanel bottomControlPanel = new JPanel();
@@ -493,6 +501,9 @@ public class MainMenu {
         resetBtn.setFont(new Font("Consolas", Font.BOLD, 18));
         resetBtn.addActionListener(_ -> resetOrder());
         bottomControlPanel.add(resetBtn);
+        /*---------------------------------------------------------------------------------------------------*/
+
+        /*--------------------------- Final Frame Adjustments and Initial Display --------------------------*/
 
         frame.add(bottomControlPanel, BorderLayout.SOUTH);
         frame.setLocationRelativeTo(null);
@@ -501,12 +512,21 @@ public class MainMenu {
         // Initial receipt area update
         updateReceiptArea();
     }
+        /*---------------------------------------------------------------------------------------------------*/
 
+    /*------------------------------------------------------------- END OF MAIN MENU WINDOW ----------------------------------------------------------------- */
+
+
+
+    /*--------------------------------------------------------------- METHODS SECTION ---------------------------------------------------------------------- */
+
+    // Individual Item Total Update Method
     private void updateItemDisplay(int index) {
         double itemTotal = itemQuantities[index] * itemPricesPhp[index];
         itemTotalLabelsPhp[index].setText("Total: " + CURRENCY_SYMBOL + df.format(itemTotal));
     }
 
+    // Live Clock Update Method
     private void updateClock(JLabel label) {
         Timer timer = new Timer(1000, _ -> {
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss a EEEE, M-d-yyyy");
@@ -515,7 +535,8 @@ public class MainMenu {
         timer.start();
     }
 
-    // New method to update the receipt area in real-time as items are added/removed
+
+    // Method to update the receipt area in real-time as items are added/removed
     private void updateReceiptArea() {
         subTotalPhp = 0.0;
         StringBuilder receiptPreview = new StringBuilder();
@@ -532,22 +553,27 @@ public class MainMenu {
         double itemTotal = 0;
 
         for (int i = 0; i < itemNames.length; i++) {
-            if (itemQuantities[i] == -1) { // Check for the invalid quantity marker
+            if (itemQuantities[i] == -1) { // Check for the invalid quantity marker (Error Handling)
                 hasInvalidQuantity = true;
                 continue; // Skip this item for receipt calculation if its quantity is invalid
             }
             if (itemQuantities[i] > 0) {
                 itemsSelected = true;
                 qty = itemQuantities[i];
+                qty = itemQuantities[i];
                 double itemPrice = itemPricesPhp[i];
                 itemTotal = qty * itemPrice;
+                itemTotal = qty * itemPrice;
 
+                itemNameWithPrice = itemNames[i] + " (" + CURRENCY_SYMBOL + df.format(itemPrice) + ")";
                 itemNameWithPrice = itemNames[i] + " (" + CURRENCY_SYMBOL + df.format(itemPrice) + ")";
                 List<String> wrappedLines = wrapText(itemNameWithPrice, RECEIPT_ITEM_COL_WIDTH);
 
                 // First line with quantity and total
                 receiptPreview.append(String.format("%-" + RECEIPT_ITEM_COL_WIDTH + "s %" + RECEIPT_QTY_COL_WIDTH + "d %" + RECEIPT_TOTAL_COL_WIDTH + "s\n",
                                                      wrappedLines.get(0), qty, df.format(itemTotal)));
+
+                
 
                 
                 // Subsequent lines (if any) for wrapping, indented
@@ -582,7 +608,8 @@ public class MainMenu {
         receiptArea.setText(receiptPreview.toString());
     }
 
-    // Helper method to update cash and change display based on current cashFieldPhp value
+
+    // Method to update cash and change display based on current cashFieldPhp value
     private void updateCashAndChangeDisplay() {
         double cashReceived = 0.0;
         try {
@@ -591,7 +618,7 @@ public class MainMenu {
             if (!cashText.isEmpty()) {
                 cashReceived = Double.parseDouble(cashText);
                 if (cashReceived < 0) {
-                    throw new NumberFormatException("Negative cash not allowed.");
+                    throw new NumberFormatException("Negative cash not allowed."); // (Error Handling)
                 }
             } else {
                 cashReceived = 0.0; // Treat empty as 0
@@ -600,7 +627,7 @@ public class MainMenu {
         } catch (NumberFormatException ex) {
             // Keep cashFieldPhp background red if invalid, but set cashReceived to 0 for calculations
             cashReceived = 0.0;
-            cashFieldPhp.setBackground(new Color(255, 200, 200)); // Light red for error
+            cashFieldPhp.setBackground(new Color(255, 200, 200)); // Light red for error (Error Handling)
             // Don't show JOptionPane here, as it would pop up on every invalid keystroke.
             // Error message will be shown on confirm.
         }
@@ -652,14 +679,14 @@ public class MainMenu {
             JOptionPane.showMessageDialog(frame,
                     "Invalid cash amount entered. Please enter a valid non-negative number.",
                     "Input Error", JOptionPane.ERROR_MESSAGE);
-            cashFieldPhp.setBackground(new Color(255, 200, 200)); // Highlight error
+            cashFieldPhp.setBackground(new Color(255, 200, 200)); // Highlight error - (Error Handling)
             return;
         }
 
         if (cashReceived < totalDuePhp) {
             JOptionPane.showMessageDialog(frame,
                     "Cash received (" + CURRENCY_SYMBOL + df.format(cashReceived) + ") is less than the total amount due (" + CURRENCY_SYMBOL + df.format(totalDuePhp) + ").",
-                    "Insufficient Cash", JOptionPane.WARNING_MESSAGE);
+                    "Insufficient Cash", JOptionPane.WARNING_MESSAGE); // (Error Handling)
             return; // Do not proceed to print receipt
         }
 
@@ -735,6 +762,7 @@ public class MainMenu {
 
     private void resetOrder() {
         orderedItemsArrayList.clear();
+        orderedItemsArrayList.clear();
         for (int i = 0; i < itemNames.length; i++) {
             itemQuantities[i] = 0;
             quantityFields[i].setText(String.format("%02d", itemQuantities[i])); // Reset text field
@@ -754,6 +782,7 @@ public class MainMenu {
         updateReceiptArea(); // Refresh empty receipt
     }
 
+    // Text Wrapping Helper Method - Used to break long item names or descriptions into multiple shorter lines
     /**
      * Helper method to wrap text into multiple lines based on a maximum width.
      * Each line is padded to the maxWidth to maintain column alignment.
@@ -801,6 +830,7 @@ public class MainMenu {
         return lines;
     }
 
+    // Separator Line Generation Helper Method
     /**
      * Helper method to generate a separator line of a given length.
      * @param length The desired length of the separator line.
