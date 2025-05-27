@@ -173,7 +173,7 @@ class Transactions {
                 viewOrderedItemsBtn.setFont(new Font("Consolas", Font.BOLD, 17));
                 transactionCardPanel.add(viewOrderedItemsBtn);
                 
-                viewOrderedItemsBtn.addActionListener(e -> {
+                viewOrderedItemsBtn.addActionListener(_ -> {
                 try {
                         String time = timeLabel.getText().substring(14);
                         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM transaction_items_tbl WHERE time = ?");
