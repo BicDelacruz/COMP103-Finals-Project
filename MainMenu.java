@@ -18,6 +18,7 @@ import java.util.List;
 
 public class MainMenu {
 
+    /*-------------------- CORE UI/DATA VARIABLES ---------------------------*/
     final String JDBC_URL = "jdbc:sqlite:scooply_db.db";
 
     private JFrame frame;
@@ -84,9 +85,14 @@ public class MainMenu {
     private final int RECEIPT_QTY_COL_WIDTH = 5;
     private final int RECEIPT_TOTAL_COL_WIDTH = 10;
     private final int RECEIPT_TOTAL_WIDTH = RECEIPT_ITEM_COL_WIDTH + RECEIPT_QTY_COL_WIDTH + RECEIPT_TOTAL_COL_WIDTH + 4;
+    /*--------------------------------------------------------------------------------------------------------------------*/
 
+    // Each inner list contains item details: [itemName, quantity, price] for all ordered items
     ArrayList<ArrayList<String>> orderedItemsArrayList = new ArrayList<>();
 
+    /*---------------------------------------------------------------- MAIN MENU WINDOW -------------------------------------------------------------------- */
+    
+    // Constructor and Initial Validation
     public MainMenu() {
         if (itemPricesPhp.length != itemNames.length || itemNames.length != imagePaths.length) {
             JOptionPane.showMessageDialog(null,
@@ -584,7 +590,7 @@ public class MainMenu {
                 subTotalPhp += itemTotal;
             }
         }
-    
+        // (Error Handling)
         if (!itemsSelected && !hasInvalidQuantity) { // Only show "No items selected" if truly empty and no input errors
             receiptPreview.append("\n          No items selected yet.\n");
         } else if (hasInvalidQuantity) {
@@ -636,6 +642,7 @@ public class MainMenu {
         changeLabelPhp.setText(df.format(changePhp));
     }
 
+    // Order Confirmation and Receipt Printing Method
     private void confirmOrderAndPrintReceipt() {
         // First, check for any invalid quantities in the item fields
         for (int i = 0; i < itemNames.length; i++) {
@@ -747,10 +754,7 @@ public class MainMenu {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         String order_time = timeFormat.format(new Date());
         String order_date = dateFormat.format(new Date());
-        //totalDuePhp
-        //cashReceived
-        //changePhp
-
+        
         insertTransaction(order_time, order_date, totalDuePhp, cashReceived, changePhp);
 
         for (int i = 0; i < orderedItemsArrayList.size(); i++) {
@@ -760,6 +764,7 @@ public class MainMenu {
         // Removed the prompt for a new order. The application will now stay on the final receipt.
     }
 
+    // Order Reset Method
     private void resetOrder() {
         orderedItemsArrayList.clear();
         orderedItemsArrayList.clear();
@@ -845,6 +850,7 @@ public class MainMenu {
         return sb.toString();
     }
 
+    // Inserts a completed transaction's details into the transactions_tbl database table
     private void insertTransaction(String order_time, String order_date, double order_total, double cash_given, double change_given ) {
         try {
             Connection conn = DriverManager.getConnection(JDBC_URL);
@@ -865,6 +871,7 @@ public class MainMenu {
         }
     }
 
+    // Inserts each ordered item's details into the transaction_items_tbl database table
     private void insertTransactionItems(String date, String time, String item_name, String quantity, String item_total) {
         try {
             Connection conn = DriverManager.getConnection(JDBC_URL);
@@ -886,4 +893,3 @@ public class MainMenu {
 
     }
 }
-
