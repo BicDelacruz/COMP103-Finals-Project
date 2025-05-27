@@ -17,7 +17,7 @@ class Transactions {
 
     private final String LOGO_ICON_PATH = "images/logo/ice_cream_logo.png";
 
-    final String JDBC_URL = "jdbc:sqlite:scooply_db.db";
+    final String JDBC_URL = "jdbc:sqlite:scooply_db.db"; // "File path" of SQLite3 database
 
     Transactions() {
         /*------------------------ MAIN WINDOW --------------------------*/
@@ -114,18 +114,25 @@ class Transactions {
         JPanel transactionsPanel = new JPanel();
         transactionsPanel.setLayout(new GridLayout(0,1,10,10));
 
+        // JPanel to contain the "horizontal cards" of orders
         JPanel orderedItemsPanel = new JPanel();
         orderedItemsPanel.setLayout(new GridLayout(0, 1, 10, 10));
         orderedItemsPanel.setPreferredSize(new Dimension(700, 0));
         orderedItemsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         centerContainerPanel.add(orderedItemsPanel, BorderLayout.EAST);
-
+        
+        /*  try-catch block summary:
+            For each row in transactions_tbl, display the information in a "horizontal card" 
+            creating 1 JLabel per column and a button to display ordered items 
+        */
         try {
+            // 1. Get connection to database, execute "SELECT * FROM ..." and store in a ResultSet
             Connection conn = DriverManager.getConnection(JDBC_URL);
             Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM transactions_tbl");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM transactions_tbl"); // expected columns are date, time, order_total, cash_given, chage_given
 
             while (resultSet.next()) {
+            // 2. Creates a JPanel transactionCardPanel as container for the JLabels
                 JPanel transactionCardPanel = new JPanel();
                 transactionCardPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
                 transactionCardPanel.setLayout(new GridLayout(0,1,0,5));
@@ -134,6 +141,7 @@ class Transactions {
                 transactionCardPanel.setOpaque(true);
                 transactionsPanel.add(transactionCardPanel);
 
+            // 3. Creates JLabels for each column (date, time, order_total, etc.), add corresponding info (from resultSet) as text, and add to JPanel transactionCardPanel
                 JLabel dateLabel = new JLabel("Date Ordered: " + resultSet.getString("date"));
                 dateLabel.setHorizontalAlignment(JLabel.CENTER);
                 dateLabel.setFont(new Font("Consolas", Font.PLAIN, 21));
@@ -169,10 +177,17 @@ class Transactions {
                 changeGivenLabel.setOpaque(true);
                 transactionCardPanel.add(changeGivenLabel);
 
+            // 4. Creates JButton viewOrderedItemsBtn and add to transactionCardPanel 
                 JButton viewOrderedItemsBtn = new JButton("View Ordered Items");                
                 viewOrderedItemsBtn.setFont(new Font("Consolas", Font.BOLD, 17));
                 transactionCardPanel.add(viewOrderedItemsBtn);
                 
+                // Breakdown of viewOrderedItemsBtn.addActionListener(): 
+                // 1. Get the time of the order from the JLabel timeLabel
+                // 2. Get result of query "SELECT * FROM transaction_items_tbl WHERE time = ?" and store it in ResultSet
+                // 3. Add the UI components (orderedItemsPanel2 as the container, and JLabels Created n times based on while(res.next()) to display information)
+                // 4. dateOrderedLabel only needs to be added once whilst itemOrderedJLabel is added until res.next() returns false
+                // 5. boolean firstRow prevents dateOrderedLabel from being added again into orderedItemsPanel2 
                 viewOrderedItemsBtn.addActionListener(_ -> {
                 try {
                         String time = timeLabel.getText().substring(14);
@@ -191,7 +206,6 @@ class Transactions {
 
                         while (res.next()) {
                             
-
                             if (firstRow) {
                                 JLabel dateOrderedLabel = new JLabel(res.getString("date") + "  |  " + res.getString("time"));
                                 dateOrderedLabel.setFont(new Font("Consolas", Font.BOLD, 25));
@@ -212,22 +226,20 @@ class Transactions {
                             itemOrderedJLabel.setOpaque(true);
                             orderedItemsPanel2.add(itemOrderedJLabel);
                             
-                            
                             orderedItemsPanel2.revalidate();
                             orderedItemsPanel2.repaint();
                         }
                     } catch (SQLException x) {
                         x.printStackTrace();
-                    }
-                });
-
-            }
+                    } // END OF try and catch block for viewOrderedItemsBtn.addActionListener()
+                }); // END OF viewOrderedItemsBtn.addActionListener()
             
-
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+        // Container with a scroll bar, hide the horizontal scrollbar
         JScrollPane itemsScrollPane = new JScrollPane(transactionsPanel);
         itemsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         itemsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
